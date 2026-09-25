@@ -30,6 +30,12 @@ export interface SyncProgress {
   done: number;
   total: number;
   newPosts: number;
+  /**
+   * Posts successfully parsed this run, including ones already archived.
+   * Distinguishes "X returned nothing" from "we could not read what it
+   * returned" - both of which otherwise look like an empty feed.
+   */
+  parsedPosts: number;
   errors: SyncError[];
   haltReason: string | null;
 }
@@ -39,6 +45,7 @@ export const IDLE_PROGRESS: SyncProgress = {
   done: 0,
   total: 0,
   newPosts: 0,
+  parsedPosts: 0,
   errors: [],
   haltReason: null,
 };
@@ -114,6 +121,7 @@ export async function syncAll(options: SyncOptions = {}): Promise<SyncProgress> 
 
       const { inserted } = await upsertTweets(user.userId, page.tweets, matcher);
 
+      progress.parsedPosts += page.tweets.length;
       progress.newPosts += inserted.length;
       if (inserted.length > 0) onInserted?.(inserted);
       for (const tweet of inserted) {

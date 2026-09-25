@@ -130,13 +130,35 @@ export function App(): React.JSX.Element {
         </>
       );
     }
+    // A sync that reached accounts but parsed nothing is not "no posts" - it
+    // means we could not read X's response, and saying so is the difference
+    // between a five-minute fix and a silent dead end.
+    if (
+      sync.progress.phase === 'done' &&
+      sync.progress.total > 0 &&
+      sync.progress.parsedPosts === 0 &&
+      sync.progress.errors.length === 0
+    ) {
+      return (
+        <>
+          <strong>Reached X, but could not read any posts.</strong>
+          <span>
+            {sync.progress.total} account
+            {sync.progress.total === 1 ? '' : 's'} synced without error, yet zero
+            posts were parsed. X has probably changed its response format.
+          </span>
+          <span>Check the browser console for details.</span>
+        </>
+      );
+    }
+
     return (
       <>
         <strong>No posts yet.</strong>
         <span>Hit “Sync all” to pull the latest from everyone you track.</span>
       </>
     );
-  }, [query, deepSearch, users.users.length, filter]);
+  }, [query, deepSearch, users.users.length, filter, sync.progress]);
 
   if (bridgeReady === null) {
     return (

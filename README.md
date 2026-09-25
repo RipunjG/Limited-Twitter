@@ -121,8 +121,15 @@ so **reinstall it manually after any change under `userscript/`**. Changes to
 | `npm run dev` | Build the userscript, then start Vite |
 | `npm run build` | Userscript + typecheck + production build |
 | `npm run build:userscript` | Rebuild only the userscript |
+| `npm test` | Parser test suite (vitest) |
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run lint` | ESLint |
+
+The tests cover `src/x/parse.ts`, which is where every silent failure has
+originated: X changes a wrapper, the parser returns zero posts, and an empty
+feed reads as "nobody posted". They assert against the shapes X actually
+returns - including ones it has since migrated away from - plus the salvage
+path that recovers posts from wrappers we do not recognise at all.
 
 ### Layout
 

@@ -373,8 +373,15 @@ function collectFromEntry(entry: Dict, into: Tweet[], cursors: { bottom: string 
       cursors.bottom = str(itemContent.value);
       return;
     }
-    if (str(itemContent.itemType) !== 'TimelineTweet') return;
-    const tweet = parseTweetResult(dig(itemContent, 'tweet_results.result'));
+    // Newer operations label this only with __typename and omit itemType.
+    const itemType = str(itemContent.itemType) ?? str(itemContent.__typename);
+    if (itemType !== 'TimelineTweet') return;
+
+    const tweet = parseTweetResult(
+      dig(itemContent, 'tweet_results.result') ??
+        dig(itemContent, 'tweetResult.result') ??
+        itemContent.tweet_results,
+    );
     if (tweet) into.push(tweet);
     return;
   }
@@ -385,6 +392,42 @@ function collectFromEntry(entry: Dict, into: Tweet[], cursors: { bottom: string 
       const subEntry = obj(sub);
       if (subEntry) collectFromEntry(subEntry, into, cursors);
     }
+  }
+}
+
+/**
+ * Gather every tweet-shaped node anywhere in a payload.
+ *
+ * The structured walk above depends on X's instruction/entry wrappers, which
+ * it renames without warning - and the failure mode is silent: zero posts,
+ * indistinguishable from "this account hasn't posted". This is the safety net,
+ * used only when the structured walk finds nothing.
+ *
+ * Nodes are not recursed into once parsed, so a quoted or reposted tweet is
+ * not also harvested as a separate top-level post.
+ */
+function collectTweetsDeep(node: unknown, out: Map<string, Tweet>, depth = 0): void {
+  if (depth > 12) return;
+
+  if (Array.isArray(node)) {
+    for (const child of node) collectTweetsDeep(child, out, depth + 1);
+    return;
+  }
+
+  const record = obj(node);
+  if (!record) return;
+
+  const typename = str(record.__typename);
+  if (typename === 'Tweet' || typename === 'TweetWithVisibilityResults') {
+    const tweet = parseTweetResult(record);
+    if (tweet) {
+      if (!out.has(tweet.id)) out.set(tweet.id, tweet);
+      return;
+    }
+  }
+
+  for (const value of Object.values(record)) {
+    collectTweetsDeep(value, out, depth + 1);
   }
 }
 
@@ -407,6 +450,21 @@ export function parseTimeline(payload: unknown): TimelinePage {
       // Pinned posts are usually old; including them would wrongly float an
       // ancient post to the top of a reverse-chron feed on every sync.
       continue;
+    }
+  }
+
+  if (tweets.length === 0) {
+    const salvaged = new Map<string, Tweet>();
+    collectTweetsDeep(payload, salvaged);
+    if (salvaged.size > 0) {
+      console.warn(
+        `[silent-feed] Timeline wrappers were not recognised; recovered ${salvaged.size} posts by scanning the payload. ` +
+          'X has likely changed its response shape.',
+      );
+      return {
+        tweets: [...salvaged.values()].sort((a, b) => b.createdAt - a.createdAt),
+        nextCursor: cursors.bottom,
+      };
     }
   }
 
@@ -442,6 +500,14 @@ export function parseThread(payload: unknown): Tweet[] {
       const entry = obj(entryRaw);
       if (entry) collectFromEntry(entry, tweets, cursors);
     }
+  }
+
+  // Same safety net as the timeline: recover posts even if the conversation
+  // wrappers are not shaped the way we expect.
+  if (tweets.length === 0) {
+    const salvaged = new Map<string, Tweet>();
+    collectTweetsDeep(payload, salvaged);
+    return [...salvaged.values()].sort((a, b) => a.createdAt - b.createdAt);
   }
 
   return tweets;
