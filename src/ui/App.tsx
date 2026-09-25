@@ -7,7 +7,9 @@ import { BridgeDiagnostics } from './components/BridgeDiagnostics';
 import { Feed } from './components/Feed';
 import { PeopleRail } from './components/PeopleRail';
 import { SettingsPanel } from './components/SettingsPanel';
+import { SetupNotice } from './components/SetupNotice';
 import { TopBar } from './components/TopBar';
+import { useBridgeStatus } from './hooks/useBridgeStatus';
 import { useFeed } from './hooks/useFeed';
 import { useSync } from './hooks/useSync';
 import { useTrackedUsers } from './hooks/useTrackedUsers';
@@ -34,6 +36,7 @@ export function App(): React.JSX.Element {
   }, []);
 
   const users = useTrackedUsers();
+  const bridge = useBridgeStatus();
 
   const feed = useFeed({
     filter,
@@ -49,6 +52,8 @@ export function App(): React.JSX.Element {
   applyInsertedRef.current = feed.applyInserted;
   const refreshCountsRef = useRef(users.refreshCounts);
   refreshCountsRef.current = users.refreshCounts;
+  const bridgeRefreshRef = useRef(bridge.refresh);
+  bridgeRefreshRef.current = bridge.refresh;
 
   const sync = useSync({
     onInserted: (tweets: StoredTweet[]) => {
@@ -58,6 +63,7 @@ export function App(): React.JSX.Element {
     onFinished: () => {
       void refreshCountsRef.current();
       void users.reload();
+      void bridgeRefreshRef.current();
     },
   });
 
@@ -191,6 +197,17 @@ export function App(): React.JSX.Element {
           onSync={() => void runSync(true)}
           onCancel={sync.cancel}
         />
+
+        {bridge.status && (
+          <SetupNotice
+            status={bridge.status}
+            sampleHandle={users.users[0]?.handle ?? 'x'}
+            onRecheck={() => {
+              void bridge.refresh();
+              void runSync(true);
+            }}
+          />
+        )}
 
         <Feed
           tweets={feed.tweets}

@@ -1,0 +1,111 @@
+.setup {
+  margin: 16px;
+  padding: 16px;
+  background: var(--bg-elevated);
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+}
+
+.setup.is-blocking {
+  border-color: rgba(255, 212, 0, 0.35);
+  background: linear-gradient(rgba(255, 212, 0, 0.06), rgba(255, 212, 0, 0.06)),
+    var(--bg-elevated);
+}
+
+.setup__title {
+  margin: 0 0 6px;
+  font-size: var(--fs-lg);
+  font-weight: 800;
+  letter-spacing: -0.01em;
+}
+
+.setup__lede {
+  margin: 0 0 14px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.setup__steps {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  counter-reset: setup;
+  display: grid;
+  gap: 8px;
+}
+
+.setup__steps li {
+  counter-increment: setup;
+  position: relative;
+  padding: 10px 12px 10px 40px;
+  background: var(--bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+}
+
+.setup__steps li::before {
+  content: counter(setup);
+  position: absolute;
+  left: 12px;
+  top: 10px;
+  display: grid;
+  place-items: center;
+  width: 20px;
+  height: 20px;
+  background: var(--accent);
+  border-radius: var(--radius-pill);
+  color: var(--accent-text);
+  font-size: var(--fs-xs);
+  font-weight: 800;
+}
+
+.setup__steps li.is-optional::before {
+  background: var(--border-strong);
+  color: var(--text-secondary);
+}
+
+.setup__link {
+  display: block;
+  font-size: var(--fs-base);
+  font-weight: 700;
+}
+
+.setup__detail {
+  display: block;
+  margin-top: 2px;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
+
+.setup__foot {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.setup__button {
+  padding: 8px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--accent-text);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  transition: background 0.12s ease;
+}
+
+.setup__button:hover {
+  background: var(--accent-hover);
+}
+
+.setup__warn {
+  flex: 1;
+  min-width: 200px;
+  color: var(--warning);
+  font-size: var(--fs-xs);
+  line-height: 1.5;
+}
