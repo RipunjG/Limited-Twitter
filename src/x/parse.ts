@@ -69,8 +69,15 @@ function parseUserResult(raw: unknown): TweetAuthor | null {
   const core = obj(result.core) ?? {};
   const avatar = obj(result.avatar) ?? {};
 
-  const userId = str(result.rest_id);
-  const handle = str(core.screen_name) ?? str(legacy.screen_name);
+  // X is migrating user fields out of `legacy` into `core`, and the migration
+  // is partial and varies by operation - so read from every location any of
+  // them currently appears in.
+  const userId = str(result.rest_id) ?? str(result.id_str) ?? str(core.rest_id);
+  const handle =
+    str(core.screen_name) ??
+    str(legacy.screen_name) ??
+    str(result.screen_name) ??
+    str(result.username);
   if (!userId || !handle) return null;
 
   // "_normal" is a 48px thumbnail; "_x96" is the crisp version X itself uses
@@ -173,7 +180,7 @@ function buildText(legacy: Dict, noteText: string | null, noteEntities: Dict | n
     // Long-form posts live in note_tweet and have no display_text_range.
     text = noteText;
   } else {
-    const full = str(legacy.full_text) ?? str(legacy.text) ?? '';
+    const full = str(legacy.full_text) ?? str(legacy.text) ?? str(legacy.body) ?? '';
     const range = arr(legacy.display_text_range);
     const start = num(range[0]);
     const end = num(range[1]);
@@ -246,14 +253,23 @@ export function parseTweetResult(raw: unknown, depth = 0): Tweet | null {
   const result = unwrapTweet(raw);
   if (!result) return null;
 
-  const legacy = obj(result.legacy);
-  if (!legacy) return null;
+  // Newer operations flatten what used to live under `legacy` onto the node
+  // itself. Treating the node as its own legacy block makes both shapes work
+  // without branching on which one we got.
+  const legacy = obj(result.legacy) ?? result;
 
   const id = str(result.rest_id);
-  const author = parseUserResult(dig(result, 'core.user_results.result'));
+  const author = parseUserResult(
+    dig(result, 'core.user_results.result') ??
+      dig(result, 'core.user_result.result') ??
+      dig(result, 'author_results.result') ??
+      dig(result, 'user_results.result') ??
+      dig(result, 'core.user'),
+  );
   if (!id || !author) return null;
 
-  const createdAtRaw = str(legacy.created_at);
+  const createdAtRaw =
+    str(legacy.created_at) ?? str(result.created_at) ?? str(dig(result, 'core.created_at'));
   const createdAt = createdAtRaw ? Date.parse(createdAtRaw) : Number.NaN;
   if (Number.isNaN(createdAt)) return null;
 

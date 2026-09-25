@@ -8,6 +8,7 @@ import { Feed } from './components/Feed';
 import { PeopleRail } from './components/PeopleRail';
 import { SettingsPanel } from './components/SettingsPanel';
 import { SetupNotice } from './components/SetupNotice';
+import { ShapeReport } from './components/ShapeReport';
 import { TopBar } from './components/TopBar';
 import { useBridgeStatus } from './hooks/useBridgeStatus';
 import { useFeed } from './hooks/useFeed';
@@ -147,7 +148,7 @@ export function App(): React.JSX.Element {
             {sync.progress.total === 1 ? '' : 's'} synced without error, yet zero
             posts were parsed. X has probably changed its response format.
           </span>
-          <span>Check the browser console for details.</span>
+          <ShapeReport />
         </>
       );
     }

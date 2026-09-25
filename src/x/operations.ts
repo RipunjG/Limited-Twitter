@@ -14,6 +14,7 @@ import {
   TIMELINE_WITH_REPLIES,
 } from '@shared/protocol';
 import { parseProfile, parseThread, parseTimeline } from './parse';
+import { clearUnreadable, recordUnreadable } from './shape';
 import type { TimelinePage, Tweet, XProfile } from './types';
 
 export class ProfileNotFoundError extends Error {
@@ -156,8 +157,17 @@ export async function fetchUserTimeline(
     : [...TIMELINE_POSTS_ONLY, ...TIMELINE_WITH_REPLIES];
 
   const data = await timelineWithFallback(candidates, variables);
+  const page = parseTimeline(data);
 
-  return parseTimeline(data);
+  // Reading nothing from a successful response is the one failure with no
+  // visible symptom, so keep the response's shape for the diagnostics panel.
+  if (page.tweets.length === 0) {
+    recordUnreadable(knownGoodTimelineOp ?? 'timeline', data);
+  } else {
+    clearUnreadable();
+  }
+
+  return page;
 }
 
 /**

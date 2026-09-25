@@ -220,6 +220,40 @@ describe('parseTweetResult', () => {
     expect(parseTweetResult('nonsense')).toBeNull();
   });
 
+  it('reads a post whose fields are flattened rather than under legacy', () => {
+    // X has been migrating fields out of `legacy`. Requiring it meant a
+    // modernised node parsed as null, and a timeline of them produced an
+    // empty feed with no error anywhere.
+    const flattened = {
+      __typename: 'Tweet',
+      rest_id: '777',
+      created_at: 'Wed Sep 24 10:00:00 +0000 2026',
+      full_text: 'no legacy block here',
+      favorite_count: 9,
+      core: { user_results: { result: userResult({ handle: 'flat' }) } },
+    };
+
+    const tweet = parseTweetResult(flattened);
+
+    expect(tweet?.id).toBe('777');
+    expect(tweet?.text).toBe('no legacy block here');
+    expect(tweet?.author.handle).toBe('flat');
+    expect(tweet?.metrics.likes).toBe(9);
+  });
+
+  it('finds the author under any of the paths X currently uses', () => {
+    const base = tweetResult({ id: '1', text: 'hi', createdAt: WHEN });
+    const withoutAuthor = { ...base, core: undefined };
+
+    for (const path of ['author_results', 'user_results'] as const) {
+      const tweet = parseTweetResult({
+        ...withoutAuthor,
+        [path]: { result: userResult({ handle: 'elsewhere' }) },
+      });
+      expect(tweet?.author.handle, `author under ${path}`).toBe('elsewhere');
+    }
+  });
+
   it('unwraps visibility-limited posts', () => {
     const tweet = parseTweetResult({
       __typename: 'TweetWithVisibilityResults',
