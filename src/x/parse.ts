@@ -371,44 +371,57 @@ function findInstructions(payload: unknown): unknown[] {
   return searchInstructions(payload) ?? [];
 }
 
-function collectFromEntry(entry: Dict, into: Tweet[], cursors: { bottom: string | null }): void {
-  const content = obj(entry.content) ?? obj(entry.item);
-  if (!content) return;
+/**
+ * Pull tweets out of one timeline entry.
+ *
+ * Dispatch is on *structure*, not on the declared entry type. A module's
+ * sub-entries carry no `entryType` or `__typename` at all - they go straight
+ * to `itemContent` - so branching on the type name silently discarded every
+ * entry of the reply timelines, which are almost entirely modules.
+ */
+function collectFromEntry(
+  entry: Dict,
+  into: Tweet[],
+  cursors: { bottom: string | null },
+  depth = 0,
+): void {
+  if (depth > 4) return;
 
-  const entryType = str(content.entryType) ?? str(content.__typename);
+  const content = obj(entry.content) ?? obj(entry.item) ?? entry;
 
-  if (entryType === 'TimelineTimelineCursor') {
-    if (str(content.cursorType) === 'Bottom') cursors.bottom = str(content.value);
-    return;
-  }
-
-  if (entryType === 'TimelineTimelineItem') {
-    const itemContent = obj(content.itemContent);
-    if (!itemContent) return;
-    if (str(itemContent.cursorType) === 'Bottom') {
-      cursors.bottom = str(itemContent.value);
-      return;
+  // A cursor, wherever it is declared.
+  const cursorType = str(content.cursorType) ?? str(dig(content, 'itemContent.cursorType'));
+  if (cursorType) {
+    if (cursorType === 'Bottom') {
+      cursors.bottom = str(content.value) ?? str(dig(content, 'itemContent.value'));
     }
-    // Newer operations label this only with __typename and omit itemType.
-    const itemType = str(itemContent.itemType) ?? str(itemContent.__typename);
-    if (itemType !== 'TimelineTweet') return;
-
-    const tweet = parseTweetResult(
-      dig(itemContent, 'tweet_results.result') ??
-        dig(itemContent, 'tweetResult.result') ??
-        itemContent.tweet_results,
-    );
-    if (tweet) into.push(tweet);
     return;
   }
 
-  // Self-threads and conversations arrive as a module of sub-entries.
-  if (entryType === 'TimelineTimelineModule') {
-    for (const sub of arr(content.items)) {
+  // A module of sub-entries: self-threads, and the conversation groupings that
+  // reply timelines are built from.
+  const items = arr(content.items);
+  if (items.length > 0) {
+    for (const sub of items) {
       const subEntry = obj(sub);
-      if (subEntry) collectFromEntry(subEntry, into, cursors);
+      if (subEntry) collectFromEntry(subEntry, into, cursors, depth + 1);
     }
+    return;
   }
+
+  const itemContent = obj(content.itemContent);
+  if (!itemContent) return;
+
+  // Absent is fine - newer payloads label some items with neither field.
+  const itemType = str(itemContent.itemType) ?? str(itemContent.__typename);
+  if (itemType !== null && itemType !== 'TimelineTweet') return;
+
+  const tweet = parseTweetResult(
+    dig(itemContent, 'tweet_results.result') ??
+      dig(itemContent, 'tweetResult.result') ??
+      itemContent.tweet_results,
+  );
+  if (tweet) into.push(tweet);
 }
 
 /**

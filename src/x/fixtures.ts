@@ -79,6 +79,36 @@ export function entryTypenameOnly(id: string, tweet: unknown): Record<string, un
   };
 }
 
+/**
+ * A conversation module, as reply timelines return.
+ *
+ * The detail that matters: each sub-entry's `item` wrapper carries no
+ * `entryType` and no `__typename`. Dispatching on entry type therefore finds
+ * nothing here, which is how an entire reply timeline came back empty.
+ */
+export function moduleEntry(id: string, tweets: unknown[]): Record<string, unknown> {
+  return {
+    entryId: `profile-conversation-${id}`,
+    sortIndex: id,
+    content: {
+      entryType: 'TimelineTimelineModule',
+      __typename: 'TimelineTimelineModule',
+      displayType: 'VerticalConversation',
+      items: tweets.map((tweet, index) => ({
+        entryId: `profile-conversation-${id}-tweet-${index}`,
+        item: {
+          itemContent: {
+            itemType: 'TimelineTweet',
+            __typename: 'TimelineTweet',
+            tweet_results: { result: tweet },
+          },
+          clientEventInfo: { component: 'conversation' },
+        },
+      })),
+    },
+  };
+}
+
 export function cursorEntry(value: string): Record<string, unknown> {
   return {
     entryId: 'cursor-bottom-0',

@@ -19,11 +19,11 @@ const KEEP_VALUE = new Set([
 ]);
 
 /** Truncation limits, to keep a shape small enough to paste into a message. */
-const MAX_DEPTH = 10;
 const MAX_KEYS = 40;
 const MAX_ARRAY_SAMPLES = 2;
 
-export function describeShape(value: unknown, depth = 0): unknown {
+export function describeShape(value: unknown, depth = 0, maxDepth = 10): unknown {
+  const MAX_DEPTH = maxDepth;
   if (value === null) return 'null';
   if (value === undefined) return 'undefined';
 
@@ -38,7 +38,7 @@ export function describeShape(value: unknown, depth = 0): unknown {
         value
           .slice(0, MAX_ARRAY_SAMPLES)
           .concat(value.length > MAX_ARRAY_SAMPLES ? [value[value.length - 1]] : [])
-          .map((item) => JSON.stringify(describeShape(item, depth + 1))),
+          .map((item) => JSON.stringify(describeShape(item, depth + 1, maxDepth))),
       ),
     ].map((json) => JSON.parse(json) as unknown);
 
@@ -55,7 +55,7 @@ export function describeShape(value: unknown, depth = 0): unknown {
     out[key] =
       KEEP_VALUE.has(key) && typeof child === 'string'
         ? child
-        : describeShape(child, depth + 1);
+        : describeShape(child, depth + 1, maxDepth);
   }
   if (entries.length > MAX_KEYS) out['…'] = `${entries.length - MAX_KEYS} more keys`;
 
@@ -68,8 +68,51 @@ export function describeShape(value: unknown, depth = 0): unknown {
  */
 let lastUnreadableShape: { operation: string; shape: unknown; at: number } | null = null;
 
+/**
+ * Locate the timeline entries, wherever they are nested.
+ *
+ * Reporting the whole payload from the root wastes the depth budget on eight
+ * levels of wrapper and truncates exactly where the interesting part starts -
+ * which is what happened the first time this diagnostic was used.
+ */
+function findEntries(node: unknown, depth = 0): unknown[] | null {
+  if (depth > 12) return null;
+
+  if (Array.isArray(node)) {
+    for (const child of node) {
+      const found = findEntries(child, depth + 1);
+      if (found) return found;
+    }
+    return null;
+  }
+
+  if (typeof node !== 'object' || node === null) return null;
+  const record = node as Record<string, unknown>;
+
+  if (Array.isArray(record.entries) && record.entries.length > 0) {
+    return record.entries as unknown[];
+  }
+
+  for (const value of Object.values(record)) {
+    const found = findEntries(value, depth + 1);
+    if (found) return found;
+  }
+  return null;
+}
+
 export function recordUnreadable(operation: string, payload: unknown): void {
-  lastUnreadableShape = { operation, shape: describeShape(payload), at: Date.now() };
+  const entries = findEntries(payload);
+
+  // Entries found: spend the whole depth budget on a couple of them, which is
+  // where any parsing problem actually lives.
+  const shape = entries
+    ? {
+        note: `${entries.length} entries found; showing the shape of the first few`,
+        entries: describeShape(entries.slice(0, 3), 0, 22),
+      }
+    : describeShape(payload, 0, 14);
+
+  lastUnreadableShape = { operation, shape, at: Date.now() };
 }
 
 export function getLastUnreadable(): typeof lastUnreadableShape {

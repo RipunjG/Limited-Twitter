@@ -3,6 +3,7 @@ import { describe, expect, it } from 'vitest';
 import {
   cursorEntry,
   entry,
+  moduleEntry,
   entryTypenameOnly,
   timelinePayload,
   tweetResult,
@@ -37,6 +38,64 @@ describe('parseTimeline', () => {
 
     expect(page.tweets).toHaveLength(1);
     expect(page.tweets[0]?.text).toBe('newer shape');
+  });
+
+  it('reads conversation modules, which reply timelines are made of', () => {
+    // Regression: UserRepliesTimeline returns almost nothing but modules, and
+    // their sub-entries declare no entryType or __typename. Dispatching on
+    // entry type found no match and dropped all 22 entries, leaving an empty
+    // feed with no error raised anywhere.
+    const page = parseTimeline(
+      timelinePayload([
+        moduleEntry('c1', [
+          tweetResult({ id: '111', text: 'the root post', createdAt: WHEN }),
+          tweetResult({ id: '112', text: 'a reply in the thread', createdAt: LATER }),
+        ]),
+        cursorEntry('CURSOR456'),
+      ]),
+    );
+
+    expect(page.tweets.map((tweet) => tweet.id)).toEqual(['111', '112']);
+    expect(page.nextCursor).toBe('CURSOR456');
+  });
+
+  it('reads a mix of modules and plain items in one response', () => {
+    const page = parseTimeline(
+      timelinePayload([
+        entry('100', tweetResult({ id: '100', text: 'standalone', createdAt: WHEN })),
+        moduleEntry('c1', [tweetResult({ id: '200', text: 'in a thread', createdAt: LATER })]),
+      ]),
+    );
+
+    expect(page.tweets.map((tweet) => tweet.id)).toEqual(['100', '200']);
+  });
+
+  it('handles a TimelineClearCache instruction alongside the entries', () => {
+    // Reply timelines lead with this; it must not shadow the entries.
+    const payload = {
+      data: {
+        user: {
+          result: {
+            __typename: 'User',
+            timeline: {
+              timeline: {
+                instructions: [
+                  { type: 'TimelineClearCache' },
+                  {
+                    type: 'TimelineAddEntries',
+                    entries: [
+                      entry('1', tweetResult({ id: '1', text: 'survives', createdAt: WHEN })),
+                    ],
+                  },
+                ],
+              },
+            },
+          },
+        },
+      },
+    };
+
+    expect(parseTimeline(payload).tweets.map((tweet) => tweet.id)).toEqual(['1']);
   });
 
   it('skips pinned posts so they do not float to the top every sync', () => {
