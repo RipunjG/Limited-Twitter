@@ -106,10 +106,24 @@ function siteDirectives(origin) {
   ];
 }
 
+/**
+ * Tampermonkey identifies a script by @name + @namespace, so dev and
+ * production builds must differ or installing one silently replaces the
+ * other - and since each build only trusts the origin it was served from,
+ * that would break whichever you replaced.
+ *
+ * Distinct identities also mean separate GM storage, so a dev experiment can
+ * never corrupt the recipes your real install depends on.
+ */
+const scriptName = confirmed ? 'Silent Feed Bridge' : 'Silent Feed Bridge (dev)';
+const namespace = confirmed
+  ? 'https://github.com/silent-feed'
+  : 'https://github.com/silent-feed#dev';
+
 const banner = [
   '// ==UserScript==',
-  '// @name         Silent Feed Bridge',
-  '// @namespace    https://github.com/silent-feed',
+  `// @name         ${scriptName}`,
+  `// @namespace    ${namespace}`,
   `// @version      ${pkg.version}.${stamp}`,
   '// @description  Lets the Silent Feed app read X through your own logged-in browser session.',
   '// @author       you',

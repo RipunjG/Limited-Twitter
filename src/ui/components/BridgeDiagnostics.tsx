@@ -190,15 +190,29 @@ export function BridgeDiagnostics({
           {rechecking ? 'Checking…' : 'Check again'}
         </button>
 
-        {/* If the script is installed but still not seen, it is almost always
-            because its @match does not cover this exact origin. */}
-        <p className="diag__hint">
-          Already installed it? The script must be granted{' '}
-          <code>{location.origin}</code>. Open the Tampermonkey dashboard, click{' '}
-          <strong>Silent Feed Bridge</strong>, and check that origin appears under
-          its <em>Settings → Includes/Excludes</em>. Its console tag is{' '}
-          <code>[silent-feed:bridge]</code>.
-        </p>
+        {/* Two causes account for virtually every occurrence, in this order. */}
+        <div className="diag__hint">
+          <strong>Already installed it?</strong>
+          <ol className="diag__causes">
+            <li>
+              <strong>It was installed from a different address.</strong> Each
+              build only trusts the site it was served from, so a copy installed
+              from localhost will not run here. Install it from{' '}
+              <a href="/silentfeed.user.js">
+                <code>{location.origin}/silentfeed.user.js</code>
+              </a>
+              .
+            </li>
+            <li>
+              <strong>Chrome has not allowed user scripts.</strong> Go to{' '}
+              <code>chrome://extensions</code> → Tampermonkey → <em>Details</em>{' '}
+              → turn on <strong>Allow User Scripts</strong>. Without it
+              Tampermonkey installs scripts normally but injects nothing,
+              anywhere. Enable <em>Developer mode</em> first if you do not see
+              the toggle.
+            </li>
+          </ol>
+        </div>
       </section>
     );
   }
