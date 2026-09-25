@@ -1,0 +1,271 @@
+.tweet {
+  position: relative;
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--border);
+  cursor: default;
+  transition: background 0.12s ease;
+}
+
+.tweet:hover {
+  background: #080808;
+}
+
+/* Unread marker: a hairline on the leading edge rather than a coloured
+   background, so a wall of unread posts stays readable. */
+.tweet.is-unread::before {
+  content: '';
+  position: absolute;
+  inset: 0 auto 0 0;
+  width: 3px;
+  background: var(--accent);
+}
+
+.tweet.is-unread .tweet__name {
+  color: var(--text);
+}
+
+.tweet:not(.is-unread) .tweet__name,
+.tweet:not(.is-unread) .tweet__text {
+  color: #b9bdc0;
+}
+
+.tweet__context {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 0 0 4px 44px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+}
+
+.tweet__context-icon {
+  width: 16px;
+  height: 16px;
+  flex: none;
+}
+
+.tweet__body {
+  display: flex;
+  gap: 12px;
+}
+
+.tweet__avatar-link {
+  flex: none;
+}
+
+.tweet__avatar {
+  display: block;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+  background: var(--bg-input);
+}
+
+.tweet__avatar--empty {
+  background: var(--bg-input);
+}
+
+.tweet__content {
+  flex: 1;
+  min-width: 0;
+}
+
+.tweet__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+}
+
+.tweet__name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 220px;
+}
+
+.icon-verified {
+  width: 16px;
+  height: 16px;
+  flex: none;
+  color: var(--accent);
+}
+
+.tweet__handle,
+.tweet__dot,
+.tweet__time {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.tweet__handle {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.tweet__open {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  margin-left: auto;
+  padding: 4px 10px;
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-weight: 600;
+  white-space: nowrap;
+  opacity: 0;
+  transition: opacity 0.12s ease, background 0.12s ease, color 0.12s ease;
+}
+
+/* Keep the link discoverable without it shouting on every row. */
+.tweet:hover .tweet__open,
+.tweet__open:focus-visible {
+  opacity: 1;
+}
+
+.tweet__open:hover {
+  background: var(--accent-subtle);
+  color: var(--accent);
+  text-decoration: none;
+}
+
+.tweet__open-icon {
+  width: 13px;
+  height: 13px;
+}
+
+.tweet__replying {
+  margin: 2px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+}
+
+.tweet__text {
+  margin: 2px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.375;
+}
+
+.tweet__metrics {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  margin-top: 12px;
+  max-width: 440px;
+}
+
+.tweet__metric {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 4px 8px 4px 0;
+  background: none;
+  border: none;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  font-variant-numeric: tabular-nums;
+}
+
+.tweet__metric-icon {
+  width: 17px;
+  height: 17px;
+  flex: none;
+}
+
+.tweet__metric--button {
+  border-radius: var(--radius-pill);
+  padding: 4px 10px 4px 8px;
+  flex: none;
+  transition: color 0.12s ease, background 0.12s ease;
+}
+
+.tweet__metric--button:hover,
+.tweet__metric--button.is-active {
+  background: var(--accent-subtle);
+  color: var(--accent);
+}
+
+.tweet__metric-chevron {
+  width: 14px;
+  height: 14px;
+  transition: transform 0.15s ease;
+}
+
+.tweet__metric-chevron.is-open {
+  transform: rotate(180deg);
+}
+
+.tweet__alert-badge {
+  margin-left: auto;
+  padding: 2px 8px;
+  background: rgba(255, 212, 0, 0.14);
+  border-radius: var(--radius-pill);
+  color: var(--warning);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+}
+
+/* ----------------------------------------------------------- quoted post */
+
+.quoted {
+  display: block;
+  margin-top: 12px;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  color: inherit;
+  transition: background 0.12s ease;
+}
+
+.quoted:hover {
+  background: var(--bg-elevated);
+  text-decoration: none;
+}
+
+.quoted__head {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  min-width: 0;
+  font-size: var(--fs-base);
+}
+
+.quoted__avatar {
+  width: 20px;
+  height: 20px;
+  border-radius: var(--radius-pill);
+  object-fit: cover;
+}
+
+.quoted__name {
+  font-weight: 700;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.quoted__handle,
+.quoted__dot,
+.quoted__time {
+  color: var(--text-secondary);
+  white-space: nowrap;
+}
+
+.quoted__text {
+  margin: 4px 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+  line-height: 1.375;
+}
+
+.quoted .media {
+  margin-top: 8px;
+}

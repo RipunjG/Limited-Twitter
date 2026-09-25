@@ -1,0 +1,50 @@
+.feed {
+  min-height: 60vh;
+}
+
+.feed--status,
+.feed--empty {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 64px 24px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  text-align: center;
+}
+
+.feed--empty {
+  flex-direction: column;
+  gap: 8px;
+  line-height: 1.5;
+}
+
+.feed__spinner {
+  width: 15px;
+  height: 15px;
+  border: 2px solid var(--border-strong);
+  border-top-color: var(--accent);
+  border-radius: var(--radius-pill);
+  animation: feed-spin 0.7s linear infinite;
+}
+
+@keyframes feed-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.feed__sentinel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  padding: 32px 16px 64px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-sm);
+}
+
+.feed__end {
+  color: var(--text-tertiary);
+}

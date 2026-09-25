@@ -1,0 +1,282 @@
+.settings {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.settings__scrim {
+  position: absolute;
+  inset: 0;
+  background: rgba(91, 112, 131, 0.4);
+  animation: settings-fade 0.15s ease;
+}
+
+@keyframes settings-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+.settings__panel {
+  position: relative;
+  width: min(520px, 100vw);
+  height: 100%;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  background: var(--bg);
+  border-left: 1px solid var(--border);
+  animation: settings-slide 0.18s ease;
+}
+
+@keyframes settings-slide {
+  from {
+    transform: translateX(24px);
+    opacity: 0;
+  }
+}
+
+.settings__header {
+  position: sticky;
+  top: 0;
+  z-index: 1;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 14px 20px;
+  background: rgba(0, 0, 0, 0.8);
+  backdrop-filter: blur(12px);
+  border-bottom: 1px solid var(--border);
+}
+
+.settings__title {
+  margin: 0;
+  font-size: var(--fs-xl);
+  font-weight: 800;
+}
+
+.settings__close {
+  display: grid;
+  place-items: center;
+  width: 32px;
+  height: 32px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.settings__close:hover {
+  background: var(--bg-elevated);
+  color: var(--text);
+}
+
+.settings__section {
+  padding: 20px;
+  border-bottom: 1px solid var(--border);
+}
+
+.settings__heading {
+  margin: 0 0 6px;
+  font-size: var(--fs-base);
+  font-weight: 800;
+}
+
+.settings__note {
+  margin: 0 0 16px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+  line-height: 1.5;
+}
+
+.settings__field {
+  display: block;
+  margin-bottom: 18px;
+}
+
+.settings__label {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 8px;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
+
+.settings__label strong {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.settings__field input[type='range'] {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.settings__hint {
+  display: block;
+  margin-top: 6px;
+  color: var(--text-tertiary);
+  font-size: var(--fs-xs);
+  line-height: 1.45;
+}
+
+.settings__toggle {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-bottom: 14px;
+  color: var(--text);
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.settings__toggle input {
+  margin-top: 2px;
+  accent-color: var(--accent);
+}
+
+.settings__alert-form {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin: 16px 0 12px;
+}
+
+.settings__input {
+  flex: 1;
+  min-width: 0;
+  padding: 9px 12px;
+  background: var(--bg-input);
+  border: 1px solid transparent;
+  border-radius: var(--radius);
+  color: var(--text);
+  font-size: var(--fs-sm);
+}
+
+.settings__input:focus {
+  border-color: var(--accent);
+  outline: none;
+}
+
+.settings__regex {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  color: var(--text-secondary);
+  font-size: var(--fs-xs);
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.settings__regex input {
+  accent-color: var(--accent);
+}
+
+.settings__button {
+  padding: 9px 16px;
+  background: var(--accent);
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--accent-text);
+  font-size: var(--fs-sm);
+  font-weight: 700;
+  white-space: nowrap;
+  transition: background 0.12s ease;
+}
+
+.settings__button:hover:not(:disabled) {
+  background: var(--accent-hover);
+}
+
+.settings__button:disabled {
+  opacity: 0.4;
+  cursor: default;
+}
+
+.settings__alerts {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+  display: grid;
+  gap: 1px;
+  background: var(--border);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.settings__alerts li {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 12px;
+  background: var(--bg);
+}
+
+.settings__alert-toggle {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+  font-size: var(--fs-sm);
+  cursor: pointer;
+}
+
+.settings__alert-toggle input {
+  accent-color: var(--accent);
+}
+
+.settings__alert-toggle code {
+  padding: 2px 6px;
+  background: var(--bg-input);
+  border-radius: var(--radius-sm);
+  font-family: var(--font-mono);
+  font-size: var(--fs-xs);
+  overflow-wrap: anywhere;
+}
+
+.settings__tag {
+  padding: 1px 6px;
+  background: var(--accent-subtle);
+  border-radius: var(--radius-pill);
+  color: var(--accent);
+  font-size: var(--fs-xs);
+  font-weight: 700;
+}
+
+.settings__icon-button {
+  display: grid;
+  place-items: center;
+  width: 28px;
+  height: 28px;
+  flex: none;
+  background: none;
+  border: none;
+  border-radius: var(--radius-pill);
+  color: var(--text-tertiary);
+  transition: background 0.12s ease, color 0.12s ease;
+}
+
+.settings__icon-button svg {
+  width: 14px;
+  height: 14px;
+}
+
+.settings__icon-button:hover {
+  background: var(--danger-subtle);
+  color: var(--danger);
+}
+
+/* The diagnostics card is already a panel; drop its chrome when nested. */
+.settings__section .diag {
+  max-width: none;
+  padding: 0;
+  background: none;
+  border: none;
+}

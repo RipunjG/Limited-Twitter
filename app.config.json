@@ -1,0 +1,6 @@
+{
+  "_comment": "Local development only. On Vercel this file is ignored: the build reads VERCEL_PROJECT_PRODUCTION_URL and trusts that domain instead, because it is provably yours. appOrigin here stays inert until appOriginConfirmed is true - trusting a domain you do not own would let whoever registers it drive your X session, and @updateURL would pull code from their server. Only set it if you self-host somewhere other than Vercel.",
+  "appOrigin": "",
+  "appOriginConfirmed": false,
+  "devOrigin": "http://localhost:5173"
+}

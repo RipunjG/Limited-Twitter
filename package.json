@@ -1,0 +1,40 @@
+{
+  "name": "silent-feed",
+  "private": true,
+  "version": "0.1.0",
+  "type": "module",
+  "description": "A private, algorithm-free X feed for accounts you follow without following.",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "dev": "npm run build:userscript && vite",
+    "build": "npm run build:userscript && tsc --noEmit && vite build",
+    "build:userscript": "node userscript/build.mjs",
+    "preview": "vite preview",
+    "typecheck": "tsc --noEmit",
+    "lint": "eslint .",
+    "lint:fix": "eslint . --fix"
+  },
+  "dependencies": {
+    "idb": "^8.0.3",
+    "minisearch": "^7.1.2",
+    "react": "^19.1.1",
+    "react-dom": "^19.1.1"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.36.0",
+    "@types/node": "^26.6.2",
+    "@types/react": "^19.1.13",
+    "@types/react-dom": "^19.1.9",
+    "@types/tampermonkey": "^5.0.4",
+    "@vitejs/plugin-react": "^5.0.3",
+    "esbuild": "^0.25.10",
+    "eslint": "^9.36.0",
+    "eslint-plugin-react-hooks": "^5.2.0",
+    "globals": "^16.4.0",
+    "typescript": "^5.9.2",
+    "typescript-eslint": "^8.44.1",
+    "vite": "^7.1.7"
+  }
+}

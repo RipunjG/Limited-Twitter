@@ -1,0 +1,57 @@
+.app {
+  display: flex;
+  align-items: flex-start;
+  min-height: 100%;
+}
+
+/* The single-column setup view, shown before the bridge exists. */
+.app--setup {
+  flex-direction: column;
+  align-items: stretch;
+}
+
+.app__masthead {
+  padding: 48px 24px 28px;
+  text-align: center;
+}
+
+.app__wordmark {
+  margin: 0;
+  font-size: var(--fs-2xl);
+  font-weight: 800;
+  letter-spacing: -0.02em;
+}
+
+.app__tagline {
+  margin: 6px 0 0;
+  color: var(--text-secondary);
+  font-size: var(--fs-base);
+}
+
+.app__main {
+  flex: 1;
+  padding: 0 16px 64px;
+}
+
+.app__column {
+  flex: 1;
+  min-width: 0;
+  max-width: 680px;
+  border-right: 1px solid var(--border);
+}
+
+@media (max-width: 1100px) {
+  .app__column {
+    max-width: none;
+  }
+}
+
+.app__booting {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  min-height: 60vh;
+  color: var(--text-secondary);
+  font-size: var(--fs-sm);
+}
